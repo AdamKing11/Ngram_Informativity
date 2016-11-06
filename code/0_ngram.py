@@ -123,13 +123,19 @@ def clean_line(line):
 	takes a line of text and returns a "cleaned" form of the line
 	
 	"""
+
+	# the way COCA does it is is to split ""contractions"" into 
+	# separate words, we'll just plop them on the previous word
+	contractions = ("n't", "'re", "'s", "'me",
+		"'m")
+
 	l = line.rstrip().rsplit(" ")
 	line = ""
 	for w in l:
 		cw = clean_word(w)
 		# because COCA makes n't separate words
-		if cw == "n't":
-			line += cw
+		if cw in contractions:
+			line = line[:-1] + cw + " "
 		else:
 			line += cw + " "
 
@@ -140,14 +146,16 @@ def clean_word(w):
 	takes a word and "cleans" it, ie folds case and gets rid of weird stuff
 	"""
 	w = w.lower()
-	w = re.sub("(^\-|\-$)","",w)
+	w = re.sub("(^[\-\.]|[\-\.]$)","",w)
 	return(w)
 
 
 if __name__ == "__main__":
-	b = build_ngrams(sys.argv[1],2)
+	# use the first argument as the COCA (or smaller version) to 
+	# calc everything
+	b = build_ngrams(sys.argv[1],4)
 
-	print("10 most frequent ngrams:")
+	print("\n10 most frequent ngrams:")
 	for n in sorted(b, key = lambda g: b[g], reverse=True)[:10]:
 		print(n,b[n])
 
