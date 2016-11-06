@@ -56,10 +56,7 @@ def ngram_informativity(ngrams):
 	# okay, we've gone through the ngrams -- let's get the average for each
 	for g in informativity:
 		informativity[g] /= -context_counts[g]
-		pass
-
-	print("the", context_counts["the"])
-	print("consequences", context_counts["consequences"])
+	
 	return informativity
 
 def build_ngrams(coca_file, ngram_size=2):
