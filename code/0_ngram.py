@@ -126,7 +126,12 @@ def clean_line(line):
 	l = line.rstrip().rsplit(" ")
 	line = ""
 	for w in l:
-		line += clean_word(w) + " "
+		cw = clean_word(w)
+		# because COCA makes n't separate words
+		if cw == "n't":
+			line += cw
+		else:
+			line += cw + " "
 
 	return(line[:-1])
 
