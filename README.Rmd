@@ -1,0 +1,19 @@
+# Ngram_Informativity
+Quick and dirty tools for building ngrams and calculating informativity based off of a corpus (in this case, built originally on COCA)
+
+```{r echo=FALSE}
+library(ggplot2)
+
+normalize <- function(x){
+  xmin = min(x)
+  xmax = max(x)
+  y = (x-xmin)/(xmax-xmin)
+  return(y)
+}
+
+d <- read.csv("sample/2-gram_informativity.txt", sep="\t", col.names = c("word","info"))
+d$normd <- normalize(d$info)
+d$len <- nchar(as.character(d$word))
+
+qplot(d$len, d$normd)
+```
