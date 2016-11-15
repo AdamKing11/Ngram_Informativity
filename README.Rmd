@@ -15,5 +15,6 @@ d <- read.csv("sample/2-gram_informativity.txt", sep="\t", col.names = c("word",
 d$normd <- normalize(d$info)
 d$len <- nchar(as.character(d$word))
 
-qplot(d$len, d$normd)
+plot(density(d$info))
+
 ```
