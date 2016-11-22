@@ -22,7 +22,7 @@ def good_word(w):
 	# keep moving the 'sliding window' until we're past the
 	# punctuation -> so that "big . Blue" is not saved as a 
 	# trigram
-	punc = "\&!\?:@\.,\"\\\/\$\'\%\)\(\*\#"
+	punc = "\&!\?:@\.,\"\\\/\$\'\%\)\(\*\#+"
 	punc = re.compile("^[" + punc + "]")
 
 	if len(w) == 0:
@@ -76,9 +76,8 @@ def preprocess_COCA():
 	
 	"""
 	print("***PREPROCESSING COCA***")
-	print("We're going to open up the COCA file and clean it \
-		and clean it up so we don't need to do that for every \
-		run.")
+	print("We're going to open up the COCA file and clean it", \
+		"up so we don't need to do that for every run.")
 
 	rF = open("COCA.cat.txt", "r")
 	wF = open("COCA.clean.txt", "w")
