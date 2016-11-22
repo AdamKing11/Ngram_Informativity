@@ -1,6 +1,6 @@
 import random, string
 
-from random_seq import *
+from code.random_seq import *
 
 def update_cohort(word, cohort, step):
 	"""
@@ -72,7 +72,7 @@ def build_lex(COCA_info, CMUDict):
 
 	# now, we want the INTERSECTION of the COCA and CMUD words...
 	for w in set(coca_words).intersection(set(cmud_words)):
-		# we'll pass the transcription to the dictionary
+		# we'll pass the informativity and transcription to the dictionary
 		# so we can use it later...
 		lex[w] = (coca_words[w], cmud_words[w])
 
@@ -85,37 +85,6 @@ def split_word(word, up):
 	prefix = word[:up]
 	suffix = word[up:]
 	return (prefix, suffix)
-
-print("Loading the files...")
-#lex = build_lex("../sample/2-gram_informativity.txt", "CMUDict_Lemma.txt")
-lex = build_lex("../sample/test.txt", "CMUDict_Lemma.txt")
-
-#####
-
-#####
-
-print("Done.")
-t_lex = [lex[w][1] for w in lex]
-up = {}
-
-print("We got", len(t_lex), "to do.\n")
-i = 0
-for w in t_lex:
-	i+=1
-	print(i, "Doing ::", w, end="          \r")
-	up[w] = (calculate_up(w, t_lex))
-print()
-
-#for w in sorted(up, key = lambda v : up[v]):
-wf = open("up.saved.txt", "w")
-i = 0
-for w in sorted(up):
-	i += 1
-	split = split_word(w, up[w][0])
-	writeString = w + "\t" + str(split) + "\t" +  str(up[w])
-	print(i, writeString)
-	wf.write(writeString + "\n")
-wf.close()
 
 """
 c = "abcd"#efghijlmnopqrstuvwxyz"
