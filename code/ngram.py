@@ -1,9 +1,8 @@
 import re, sys, math
 
-from housekeeping import *
+from code.housekeeping import *
 
 # meat and potatoes
-
 
 
 
@@ -24,19 +23,26 @@ def ngram_informativity(ngrams):
 	context_competitors = {}
 	context_counts = {}
 	informativity = {}
-	comp_sum = 0
+	context_sum = 0
 	# first thing to do is SORT 
 	# we're sorting the ngram keys by the first part of the ngrams
 	# (we don't really care about the last guy)
 	
 	c = 0
+	# we add this terminal item as the LAST item we loop through
+	# this way, we can ENSURE we update the final time
+	terminal_item = "ZZZZZ"
 	
 	print("We have", len(ngrams),"total ngrams to look at...")
-	for g in sorted(ngrams, key = lambda element: tuple(element[:-1])):
+	# sort by all but last thing in the tuple
+	sorted_ngrams = sorted(ngrams, key = lambda elements: tuple(elements[:-1]))
+	sorted_ngrams.append(terminal_item)
+
+	for g in sorted_ngrams:
 		c+=1
 		print("Looking at",c, end="\r")
-		# if we're in a new context....
-		if tuple(g[:-1]) != context:
+		# if we're in a new context OR we're at the end....
+		if tuple(g[:-1]) != context or g == terminal_item:
 			for w in context_competitors:
 				# okay, so we take the ngram count for the given word and 
 				# divide it by the total sum of ALL ngrams of the same context
@@ -45,11 +51,14 @@ def ngram_informativity(ngrams):
 				# we also store a count of how many times we've touched the 
 				# informativity for each word so we can get the avg later
 				if w in informativity:
-					informativity[w] += math.log(context_competitors[w]/comp_sum,2)
+					informativity[w] += math.log(context_competitors[w]/context_sum,2)
 					context_counts[w] += 1
 				else:
-					informativity[w] = math.log(context_competitors[w]/comp_sum,2)
+					informativity[w] = math.log(context_competitors[w]/context_sum,2)
 					context_counts[w] = 1
+			# if we got here via the terminal item, end the loop here
+			if g == terminal_item:
+				break
 			context = tuple(g[:-1])
 			context_competitors = {}
 			context_sum = 0
@@ -62,12 +71,13 @@ def ngram_informativity(ngrams):
 		# word is the key
 		context_competitors[g[-1]] = ngrams[g]
 		# just make a variable to store the SUM of all competitors so far
-		comp_sum += ngrams[g]
+		context_sum += ngrams[g]
+	
 	print("\nDone. Getting averages....")
 	# okay, we've gone through the ngrams -- let's get the average for each
 	for g in informativity:
 		informativity[g] /= -context_counts[g]
-	
+
 	return informativity
 
 def build_ngrams(coca_file, ngram_size=2):
@@ -131,13 +141,31 @@ def save_ngram_file(ngrams, outfile = None):
 			ngram_str = ngram_str[:-1]
 			wF.write(ngram_str + "\t" + str(ngrams[n]) + "\n")
 
+def load_ngram_file(ngram_file):
+	"""
+	loads in an already created ngram file and returns it
+	"""
+	ngrams = {}
+	i = 0
+	print("Opening", ngram_file, "....")
+	with open(ngram_file, "r") as rf:
+		for line in rf:
+			i+=1
+			print("Reading line", i, end="\r")
+			line = line.rstrip().rsplit("\t")
+			n = tuple(line[0].rsplit(" "))
+			count = int(line[1])
+			ngrams[n] = count
+	print("\nDone reading", i, "ngrams.")
+	return ngrams
+
 def save_informativity_file(infor, outfile = "avg_informativity.txt"):
 	"""
 	format - word TAB informativity
 	"""
 
 	with open(outfile, "w") as wF:
-		for i in infor:
+		for i in sorted(infor):
 			wF.write(i + "\t" + str(infor[i]) + "\n")
 
 
