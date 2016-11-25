@@ -78,9 +78,10 @@ def build_lex(COCA_info, CMUDict):
 
 	return lex
 
-def split_word(word, up):
+def split_word(word, up, up_in_prefix = 0, up_in_suffix = 0):
 	"""
 	given a uniqueness point, split a word into "prefix" and "suffix"
+
 	"""
 	prefix = word[:up]
 	suffix = word[up:]
