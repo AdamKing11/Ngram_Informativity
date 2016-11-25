@@ -1,11 +1,10 @@
 import re, sys, math
+from nltk.stem import WordNetLemmatizer
+
 
 from code.housekeeping import *
 
 # meat and potatoes
-
-
-
 
 def ngram_informativity(ngrams):
 	"""
@@ -80,11 +79,13 @@ def ngram_informativity(ngrams):
 
 	return informativity
 
-def build_ngrams(coca_file, ngram_size=2):
+def build_ngrams(coca_file, ngram_size=2, stemmer=True):
 	"""
-	Opens a file an builds a dictionary of ngrams of a given length
+	Opens a **cleaned** COCA file an builds a dictionary of ngrams of a given length
 
 	"""
+	# do the stemming in the main function so we only have to load the stemmer once
+	lemmatizer = WordNetLemmatizer()
 	ngram_d = {}
 
 	c = 0
@@ -96,7 +97,6 @@ def build_ngrams(coca_file, ngram_size=2):
 			######
 			# pre-processing takes out need to clean the line every time
 			######
-			#words = clean_line(line).split(" ")
 			words = line.rstrip().split(" ")
 
 			# we're going to loop through all words and build ngrams out of them
@@ -105,8 +105,11 @@ def build_ngrams(coca_file, ngram_size=2):
 			# 
 			for i in range(len(words)-(ngram_size-1)):
 				# make the ngram into a tuple (to use as key in dict)
-				ngram = tuple(words[i:i+ngram_size])
-
+				ngram = words[i:i+ngram_size]
+				###
+				if stemmer:
+					ngram = tuple(lemmatizer.lemmatize(w) for w in ngram)
+				###
 				# check to make sure ALL words are good in the ngram
 				if good_ngram(ngram):
 					if ngram in ngram_d:
@@ -123,8 +126,6 @@ def save_ngram_file(ngrams, outfile = None):
 		with all words in ngram separated by SPACE
 		(so we can tell them apart....)
 	"""
-
-
 	# sort the ngrams
 	ngram_list = sorted(ngrams, key = lambda element: tuple(element[:-1]))
 	ngram_len = len(ngram_list[0])
@@ -168,6 +169,22 @@ def save_informativity_file(infor, outfile = "avg_informativity.txt"):
 		for i in sorted(infor):
 			wF.write(i + "\t" + str(infor[i]) + "\n")
 
+def read_CELEX(celex_file):
+	"""
+	reads in the CELEX file and returns a dictionary of all words and
+	their morpheme count
+	"""
+	morph_parses = {}
+	with open(celex_file, "r") as rF:
+		i = 0
+		for line in rF:
+			i+=1
+			line = line.rstrip()
+			l = line.rsplit("\\")
+			if re.search(" ", l[1]):
+				continue
+			morph_parses[l[1]] = len(re.findall("\+",l[11]))
+	return morph_parses
 
 if __name__ == "__main__":
 
@@ -207,4 +224,4 @@ if __name__ == "__main__":
 	print("\n10 least informative words:")
 	for n in sorted(i, key = lambda g: i[g])[:10]:
 		print("\t", n,i[n])
-	
+
