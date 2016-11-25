@@ -1,4 +1,4 @@
-import re
+import re, nltk
 
 # file for holding all the functions for cleaning up the data
 
