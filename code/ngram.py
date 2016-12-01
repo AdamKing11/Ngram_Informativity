@@ -6,7 +6,7 @@ from code.housekeeping import *
 
 # meat and potatoes
 
-def ngram_informativity(ngrams):
+def ngram_informativity(ngrams, do_average = True):
 	"""
 	takes in an ngram file and calculates average informativy
 	informativity is defined as - AVG LOG prob of word | context
@@ -71,11 +71,16 @@ def ngram_informativity(ngrams):
 		context_competitors[g[-1]] = ngrams[g]
 		# just make a variable to store the SUM of all competitors so far
 		context_sum += ngrams[g]
-	
-	print("\nDone. Getting averages....")
-	# okay, we've gone through the ngrams -- let's get the average for each
-	for g in informativity:
-		informativity[g] /= -context_counts[g]
+	# if we want to get the average....
+	if do_average:
+		print("\nDone. Getting averages....")
+		# okay, we've gone through the ngrams -- let's get the average for each
+		for g in informativity:
+			informativity[g] /= -context_counts[g]
+	else:
+		# even if we're not getting the average, still need to swith signs
+		for g in informativity:
+			informativity[g] *= -1 
 
 	return informativity
 
@@ -118,6 +123,61 @@ def build_ngrams(coca_file, ngram_size=2, stemmer=True):
 						ngram_d[ngram] = 1
 	print("\nDone reading.", c, "lines read in total.")
 	return ngram_d
+
+def build_unigrams(coca_file, stemmer=True):
+	"""
+	Opens a **cleaned** COCA file an builds a dictionary of unigrams
+
+	"""
+	# do the stemming in the main function so we only have to load the stemmer once
+	lemmatizer = WordNetLemmatizer()
+	unigrams = {}
+
+	c = 0
+	with open(coca_file, "r") as rF:
+		for line in rF:
+			c += 1
+			print("Reading line", c, end="\r")
+			words = line.rstrip().split(" ")
+
+			for w in words:
+				if stemmer:
+					w = lemmatizer.lemmatize(w)
+				if good_word(w):
+					if w in unigrams:
+						unigrams[w] += 1
+					else:
+						unigrams[w] = 1
+	print("\nDone reading.", c, "lines read in total.")
+	return unigrams
+
+def save_unigram_file(unigrams, outfile = None):
+	"""
+	takes a unigram dictionary and saves it, sorted with most frequent on top
+	"""
+	if outfile == None:
+		outfile = "unigrams.txt"
+	with open(outfile, "w") as wF:
+		for u in sorted(unigrams, key = lambda x : unigrams[x], reverse = True):
+			wF.write(u + "\t" + str(unigrams[u]) + "\n")
+
+def load_unigram_file(unigram_file):
+	"""
+	reads in a file of saved unigrams and their counts
+	"""
+	unigrams = {}
+	i = 0
+	print("Opening", unigram_file, "...")
+	with open(unigram_file, "r") as rf:
+		for line in rf:
+			i += 1
+			print("Reading line", i, end="\r")
+			line = line.rstrip().rsplit("\t")
+			unigrams[line[0]] = int(line[1])
+	print()
+	print("Done reading unigrams.")
+	return unigrams
+
 
 def save_ngram_file(ngrams, outfile = None):
 	"""
