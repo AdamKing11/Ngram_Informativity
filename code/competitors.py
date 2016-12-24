@@ -48,9 +48,7 @@ if __name__ == "__main__":
 		word_to_competitors[w] = set([])
 		for c in word_to_context[w]:
 			word_to_competitors[w] = word_to_competitors[w].union(context_to_word[c])
-		# for memory efficiency	
-			del context_to_word[c]
-
+			
 	print()
 	print("saving...")
 	with open("sample/competitors.txt", "w") as wf:
