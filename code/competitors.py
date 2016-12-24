@@ -50,7 +50,6 @@ if __name__ == "__main__":
 			word_to_competitors[w] = word_to_competitors[w].union(context_to_word[c])
 		# for memory efficiency	
 			del context_to_word[c]
-		del word_to_context[w]
 
 	print()
 	print("saving...")
