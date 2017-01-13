@@ -2,7 +2,7 @@ import random, string
 
 from code.random_seq import *
 
-def update_cohort(word, cohort, step):
+def update_cohort(word, cohort, step, with_freq = True):
 	"""
 	semi-recursive implementation of cohort calculation
 	basically, we get a cohort in, we check to see if our
@@ -16,13 +16,16 @@ def update_cohort(word, cohort, step):
 		if len(v) <= step:
 			continue
 		if word[step] == v[step]:
-			new_cohort[v] = 1
+			if type(cohort) == dict and with_freq:
+				new_cohort[v] = cohort[v]
+			else:
+				new_cohort[v] = 1
 			found_matches = True
 		elif found_matches:
 			break
 	return new_cohort
 
-def calculate_up(word, cohort):
+def calculate_up(word, cohort, with_freq = True):
 	"""
 	using the update_cohort method, we start at 0 (first char) and
 	check each word in our starting cohort to find matches
@@ -30,17 +33,22 @@ def calculate_up(word, cohort):
 	cut at step 0
 	we iterate until there are no words EXCEPT the original, ie it's
 	unique
+	'with_freq' argument to specify if we want to include WORD FREQUENCY
+	when calculating the competitors at each segment position
 	"""
 	up = len(word)-1
 	cohort_history = [1 for _ in range(len(word))]
+	cohort_hist_freq = [0 for _ in range(len(word))]
 	for i in range(len(word)):
 		new_cohort = update_cohort(word, cohort, i)
 		cohort_history[i] = len(new_cohort)
+		for cw in new_cohort:
+			cohort_hist_freq[i] += new_cohort[cw]
 		cohort = new_cohort
 		if len(new_cohort) == 1:
 			up = i
 			break
-	return up, cohort_history
+	return up, cohort_history, cohort_hist_freq
 
 def build_lex(COCA_info, CMUDict):
 	"""
@@ -87,23 +95,3 @@ def split_word(word, up, up_in_prefix = 0, up_in_suffix = 0):
 	suffix = word[up:]
 	return (prefix, suffix)
 
-"""
-c = "abcd"#efghijlmnopqrstuvwxyz"
-
-gen_random_words("test.txt", c=c, max_length=8, max_per_len = 200, min_per_len = 180)
-lexicon = read_random_words("test.txt")
-up = {}
-print(len(lexicon), "total words.\n")
-i = 0
-for w in lexicon:
-	i+=1
-	print(i, "Doing ::", w, end="\r")
-	up[w] = (calculate_up(w, lexicon))
-print()
-
-#for w in sorted(up, key = lambda v : up[v]):
-i = 0
-for w in sorted(up):
-	i += 1
-	print(i, w, up[w])
-"""
